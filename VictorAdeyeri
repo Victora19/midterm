@@ -1,0 +1,193 @@
+% MATLAB Midterm Project: Introduction to Programming Concepts
+% Author: Victor Adeyeri - Fall 2024 - Deadline: Nov 13, 2024
+
+%% Objective:
+% This project implements a student database management system using MATLAB's OOP capabilities.
+% The system supports data visualization, statistical analysis, and file handling for persistence.
+
+%% Task 1: Population Growth Analysis (20 points)
+% Function to simulate population growth based on given parameters.
+
+function [years, population] = populationGrowth(initialPop, growthRate, numYears)
+    years = 1:numYears;
+    population = zeros(1, numYears);
+    population(1) = initialPop;
+    for i = 1:numYears
+        population(i) = population(i-1) * (1 + growthRate);
+    end
+    plot(years, population);  
+    title('Population Growth Over Time');
+    xlabel('Years');
+    ylabel('Population');
+end
+
+%% Task 2: Simple Encryption Function (25 points)
+% Function to encrypt a string using a basic Caesar cipher technique.
+
+function encryptedText = simpleEncrypt(text, shift)
+    encryptedText = char(mod(double(text) + shift - 32, 95) + 32); 
+end
+
+%% Task 3: Weather Data Analysis (25 points)
+% Analyzes weather data, calculating average temperature, etc.
+
+function [avgTemp, minTemp, maxTemp] = weatherDataAnalysis(temps)
+    avgTemp = mean(temps);
+    minTemp = min(temp);  
+    maxTemp = max(temps);
+    fprintf('Average Temp: %.2f\n', avgTemp);
+    fprintf('Min Temp: %.2f\n', minTemp);
+    fprintf('Max Temp: %.2f\n', maxTemp);
+end
+
+%% Task 4: Solar System Visualization (15 points)
+% Basic Solar System visualization using a simple plot with random planets.
+
+function solarSystemVisualization()
+    theta = linspace(0, 2*pi, 100);
+    r = [5, 10, 15, 20]; 
+    colors = {'b', 'g', 'r', 'c'};
+    hold on;
+    for i = 1:length(r)
+        x = r(i) * cos(theta);
+        y = r(i) * sin(theta);
+        plot(x, y, 'Color', colors{i}); 
+    end
+    plot(0, 0, 'yo', 'MarkerSize', 10); 
+    title('Solar System Visualization');
+    xlabel('X Axis');
+    ylabel('Y Axis');
+    axis equal;
+    hold off;
+end
+
+%% Task 5: Stock Market Analysis (15 points)
+% Analyzes stock data by calculating average, min, and max stock prices.
+
+function [avgPrice, minPrice, maxPrice] = stockMarketAnalysis(prices)
+    avgPrice = mean(prices);
+    minPrice = minPrices;  
+    maxPrice = max(prices);
+    fprintf('Average Price: %.2f\n', avgPrice);
+    fprintf('Min Price: %.2f\n', minPrice);
+    fprintf('Max Price: %.2f\n', maxPrice);
+end
+
+%% Student Database Management System (OOP Implementation)
+
+% Student Class Definition
+classdef Student
+    properties
+        ID
+        Name
+        Age
+        GPA
+        Major
+    end
+    
+    methods
+        function obj = Student(ID, Name, Age, GPA, Major)
+            obj.ID = ID;
+            obj.Name = Name;
+            obj.Age = Age;
+            obj.GPA = GPA;
+            obj.Major = Major;
+        end
+        
+        function displayInfo(obj)
+            fprintf('ID: %d, Name: %s, Age: %d, GPA: %.2f, Major: %s\n', ...
+                obj.ID, obj.Name, obj.Age, obj.GPA, obj.Major);
+        end
+        
+        function obj = updateGPA(obj, newGPA)
+            GPA = newGPA;  
+        end
+    end
+end
+
+% StudentDatabase Class Definition
+classdef StudentDatabase
+    properties
+        Students = []    
+    end
+    
+    methods
+        function obj = addStudent(obj, student)
+            obj.Students = [obj.Students; student];
+        end
+        
+        function saveDatabase(obj, filename)
+            save(filename, 'obj');
+        end
+        
+        function obj = loadDatabase(filename)
+            data = load(filename);
+            obj = data.obj;
+        end
+        
+        function student = findStudentByID(obj, ID)
+            student = [];
+            for i = 1:length(obj.Students)
+                if obj.Students(i).ID == ID
+                    student = obj.Students(i);
+                    return;
+                end
+            end
+            fprintf('Student not found.\n');  
+        end
+        
+        function students = getStudentsByMajor(obj, major)
+            students = [];
+            for i = 1:length(obj.Students)
+                if strcmp(obj.Students(i).Major, major)
+                    students = [students; obj.Students(i)];
+                end
+            end
+        end
+        
+        function plotGPAHistogram(obj)
+            GPAs = arrayfun(@(x) x.GPA, obj.Students);
+            histogram(GPAs);
+            title('GPA Distribution');
+            xlabel('GPA');
+            ylabel('Frequency');
+        end
+        
+        function plotAverageGPAByMajor(obj)
+            majors = unique(arrayfun(@(x) x.Major, obj.Students, 'UniformOutput', false));
+            avgGPA = zeros(1, length(majors));
+            for i = 1:length(majors)
+                majorGPAs = arrayfun(@(x) x.GPA, obj.Students(strcmp({obj.Students.Major}, majors{i})));
+                avgGPA(i) = mean(majorGPAs);
+            end
+            bar(avgGPA);
+            set(gca, 'xticklabel', majors);  
+            title('Average GPA by Major');
+            xlabel('Major');
+            ylabel('Average GPA');
+        end
+    end
+end
+
+%% Main Script
+% Demonstrates database creation, adding students, visualizations
+
+% Creating Student Database
+db = StudentDatabase();
+
+% Adding Sample Students
+db = db.addStudent(Student(1, 'Alice', 20, 3.5, 'Engineering'));
+db = db.addStudent(Student(2, 'Bob', 21, 3.8, 'Science'));
+db = db.addStudent(Student(3, 'Charlie', 22, 3.2, 'Engineering'));
+
+% Finding a Student by ID
+student = db.findStudentByID(4); 
+student.displayInfo();  
+
+% Visualization
+db.plotGPAHistogram();
+db.plotAverageGPAByMajor();
+
+% Saving and Loading Database
+db.saveDatabase('student_database.mat');
+db = db.loadDatabase('student_database.mat');
